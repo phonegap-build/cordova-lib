@@ -34,14 +34,26 @@ module.exports = common = {
     },
     // helper for resolving target paths from plugin.xml into a cordova project
     resolveTargetPath:function(project_dir, relative_path) {
-        var full_path = path.resolve(project_dir, relative_path);
+        var full_path = path.resolve(project_dir, relative_path);        
         return full_path;
     },
     // Many times we simply need to copy shit over, knowing if a source path doesnt exist or if a target path already exists
     copyFile:function(plugin_dir, src, project_dir, dest) {
         src = module.exports.resolveSrcPath(plugin_dir, src);
         if (!fs.existsSync(src)) throw new Error('"' + src + '" not found!');
+
+        // check that src path is inside plugin directory
+        var real_path = fs.realpathSync(src);
+        var real_plugin_path = fs.realpathSync(plugin_dir);
+        if (real_path.indexOf(real_plugin_path) !== 0)
+            throw new Error('"' + src + '" not located within plugin!');
+
         dest = module.exports.resolveTargetPath(project_dir, dest);
+
+        // check that dest path is located in project directory
+        if (dest.indexOf(project_dir) !== 0)
+            throw new Error('"' + dest + '" not located within project!');
+
         shell.mkdir('-p', path.dirname(dest));
 
         // XXX shelljs decides to create a directory when -R|-r is used which sucks. http://goo.gl/nbsjq
