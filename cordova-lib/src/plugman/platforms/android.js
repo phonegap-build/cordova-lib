@@ -147,7 +147,7 @@ module.exports = {
                 projectConfig.addSystemLibrary(parentDir, subDir);
             } else {
                 projectConfig.addSubProject(parentDir, subDir);
-                projectConfig.needsSubLibraryUpdate = semver.lt(options.platformVersion, '3.6.0');
+                projectConfig.needsSubLibraryUpdate = true;
             }
         },
         uninstall:function(obj, project_dir, plugin_id, options) {
