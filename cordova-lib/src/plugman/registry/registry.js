@@ -84,17 +84,24 @@ module.exports = {
     fetch: function(plugin, client) {
         plugin = plugin.shift();
         return Q.fcall(function() {
+
+            // map to new name if applicable
+            var plugin_id = plugin.split('@')[0];
+
+            warnIfIdInMapper(plugin_id);
+
+            var new_plugin_id = pluginMapper[plugin_id];
+            if (new_plugin_id) {
+                plugin = plugin.replace(plugin_id, new_plugin_id);
+                events.emit('log', 'Changing plugin to "' + plugin + '"');
+            }
+
             //fetch from npm
             return fetchPlugin(plugin, client, true);
         })
         .fail(function(error) {
-            //check to see if pluginID is reverse domain name style
-            if(isValidCprName(plugin)) {
-                //fetch from CPR
-                return fetchPlugin(plugin, client, false);
-            } else {
-                return Q.reject(error);
-            }
+            // dont go to CPR !!!!!
+            return Q.reject(error);
         });
     },
 
@@ -276,26 +283,6 @@ function fetchPlugin(plugin, client, useNpmRegistry) {
             return unpack.unpackTgz(package_tgz, pluginDir);
         });
     });
-}
-
-/**
- * @param {Array} with one element - the plugin id or "id@version"
- * @return {Boolean} if plugin id is reverse domain name style.
- */
-function isValidCprName(plugin) {
-    // Split @Version from the plugin id if it exists.
-    var splitVersion = plugin.split('@');
-
-    //Create regex that checks for at least two dots with any characters except @ to determine if it is reverse domain name style.
-    var matches = /([^@]*\.[^@]*\.[^@]*)/.exec(splitVersion[0]);
-
-    //If matches equals null, plugin is not reverse domain name style
-    if(matches === null) {
-        return false;
-    } else {
-        warnIfIdInMapper(splitVersion[0]);
-    }
-    return true;
 }
 
 /**
