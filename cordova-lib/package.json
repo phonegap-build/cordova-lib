@@ -1,8 +1,8 @@
 {
   "author": "Apache Software Foundation",
-  "name": "cordova-lib",
+  "name": "pgb-cordova-lib",
   "description": "Apache Cordova tools core lib and API",
-  "version": "5.3.3",
+  "version": "0.0.1-pgb",
   "repository": {
     "type": "git",
     "url": "git://git-wip-us.apache.org/repos/asf/cordova-lib.git"
