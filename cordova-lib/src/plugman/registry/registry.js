@@ -85,13 +85,9 @@ module.exports = {
             return fetchPlugin(plugin, client, true);
         })
         .fail(function(error) {
-            //check to see if pluginID is reverse domain name style
-            if(isValidCprName(plugin)) {
-                //fetch from CPR
-                return fetchPlugin(plugin, client, false);
-            } else {
-                return Q.reject(error);
-            }
+
+            // DONT GO TO CPR !!!!!!!
+            return Q.reject(error);
         });
     },
 
