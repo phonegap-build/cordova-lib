@@ -280,7 +280,8 @@ function runInstall(actions, platform, project_dir, plugin_dir, plugins_dir, opt
         }
         return Q();
     }
-    events.emit('log', 'Installing "' + pluginInfo.id + '" for ' + platform);
+    events.emit('log', 'Installing "' + pluginInfo.id + '@' + pluginInfo.version + '" for ' + platform);
+
 
     var theEngines = getEngines(pluginInfo, platform, project_dir, plugin_dir);
 
