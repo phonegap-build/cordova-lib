@@ -31,7 +31,9 @@ exports.clone = clone;
 //  if no clone_dir is supplied, a temp directory will be created and used by git.
 function clone(git_url, git_ref, clone_dir){
     
-    var needsGitCheckout = !!git_ref;
+    var needsGitCheckout = true,
+        git_ref = git_ref || 'master';
+
     if (!shell.which('git')) {
         return Q.reject(new Error('"git" command line tool is not installed: make sure it is accessible on your PATH.'));
     }
@@ -43,14 +45,25 @@ function clone(git_url, git_ref, clone_dir){
     }
     shell.rm('-rf', tmp_dir);
     shell.mkdir('-p', tmp_dir);
-    
-    var cloneArgs = ['clone'];
-    if(!needsGitCheckout) {
-        // only get depth of 1 if there is no branch/commit specified
-        cloneArgs.push('--depth=1');
-    }
-    cloneArgs.push(git_url, tmp_dir);
-    return superspawn.spawn('git', cloneArgs)
+
+    var cloneArgs       = ['clone'],
+        lsRemoteArgs    = ['ls-remote', '-ht', '--exit-code', git_url, git_ref]
+
+    return superspawn.spawn('git', lsRemoteArgs)
+    .then(function() {
+        needsGitCheckout = false
+        cloneArgs.push('--depth=1', '-b', git_ref)
+        events.emit('log', 'Using shallow clone');
+    })
+    .fail(function() {
+        events.emit('log', 'Cloning full repository');
+    })
+    .then(function() { 
+        cloneArgs.push(git_url, tmp_dir)
+    })
+    .then(function() { 
+        return superspawn.spawn('git', cloneArgs)
+    })
     .then(function() {
         if (needsGitCheckout){
             return superspawn.spawn('git', ['checkout', git_ref], {
@@ -58,8 +71,13 @@ function clone(git_url, git_ref, clone_dir){
             });
         }
     })
-    .then(function(){
-        events.emit('log', 'Repository "' + git_url + '" checked out to git ref "' + (git_ref || 'master') + '".');
+    .then(function() {
+        return superspawn.spawn('git', ['rev-parse', '--short', 'HEAD'], {
+            cwd: tmp_dir
+        });
+    })
+    .then(function(sha){
+        events.emit('log', 'Repository "' + git_url + '" checked out to git ref "' + git_ref + '" at "' + sha + '".');
         return tmp_dir;
     })
     .fail(function (err) {
