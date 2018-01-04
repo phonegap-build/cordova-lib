@@ -112,7 +112,9 @@ plugman.commands = {
                 www_dir: cli_opts.www,
                 save: cli_opts.save || false,
                 fetch: cli_opts.fetch || false,
-                projectRoot: cli_opts.project
+                projectRoot: cli_opts.project,
+                force: cli_opts.force || false,
+                nohooks: cli_opts.nohooks || false
             };
             p = p.then(function () {
                 return plugman.uninstall(cli_opts.platform, cli_opts.project, pluginSrc, cli_opts.plugins_dir, opts);
