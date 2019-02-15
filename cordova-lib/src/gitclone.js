@@ -40,8 +40,11 @@ function clone(git_url, git_ref, clone_dir){
 
     // If no clone_dir is specified, create a tmp dir which git will clone into.
     var tmp_dir = clone_dir;
+    var tmp_dir_local = clone_dir;
     if(!tmp_dir){
-        tmp_dir = path.join(os.tmpdir(), 'git', String((new Date()).valueOf()));
+        var dir = String((new Date()).valueOf())
+        tmp_dir = path.join(os.tmpdir(), 'git', dir);
+        tmp_dir_local = `/tmp/git/${dir}`
     }
     shell.rm('-rf', tmp_dir);
     shell.mkdir('-p', tmp_dir);
@@ -59,7 +62,7 @@ function clone(git_url, git_ref, clone_dir){
         events.emit('log', 'Cloning full repository');
     })
     .then(function() { 
-        cloneArgs.push(git_url, tmp_dir)
+        cloneArgs.push(git_url, tmp_dir_local)
     })
     .then(function() { 
         return superspawn.spawn('git', cloneArgs)
